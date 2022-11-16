@@ -16,6 +16,22 @@ def length(list):
         ctr+=1
     return ctr
 
+# {Fungsi selektor 1 baris suatu Matrix}
+def getRow(Matrix, row):
+    col = length(Matrix[0])
+    result = createMatrix(1, col)
+    for i in range(col):
+        result[0][i] = Matrix[row][i]
+    return result
+
+# {Fungsi selektor 1 kolom suatu Matrix}
+def getCol(Matrix, col):
+    row = length(Matrix)
+    result = createMatrix(row, 1)
+    for i in range(row):
+        result[i][0] = Matrix[i][col]
+    return result
+
 # {fungsi yang menghasilkan salinan suatu matriks}
 def copyMatrix(Matrix):
     rowCopy = length(Matrix)
@@ -25,6 +41,7 @@ def copyMatrix(Matrix):
         for j in range(colCopy):
             copy[i][j] = Matrix[i][j]
     return copy
+
 # {Prosedur print matrix}
 def printMatrix(Matrix):
     row = length(Matrix)
@@ -42,30 +59,30 @@ def printMatrix(Matrix):
 def addMatrix(Matrix1, Matrix2):
     row = length(Matrix1)
     col = length(Matrix1[0])
-    M = Matrix1
-    for i in row:
-        for j in col:
-            M[i][j] += Matrix2[i][j]
+    M = createMatrix(row,col)
+    for i in range(row):
+        for j in range(col):
+            M[i][j] = Matrix1[i][j] + Matrix2[i][j]
     return M
 
 # {fungsi yang mengembalikan pengurangan matrix dari Matrix1 dan Matrix2}
 def subtractMatrix(Matrix1, Matrix2):
     row = length(Matrix1)
     col = length(Matrix1[0])
-    M = Matrix1
-    for i in row:
-        for j in col:
-            M[i][j] -= Matrix2[i][j]
+    M = createMatrix(row, col)
+    for i in range(row):
+        for j in range(col):
+            M[i][j] = Matrix1[i][j] - Matrix2[i][j]
     return M
 
 # {fungsi yang mengembalikan matriks Md yang dikali konstanta n}
 def kaliConstMatrix(Matrix, n):
     row = length(Matrix)
     col = length(Matrix[0])
-    M = Matrix
-    for i in row:
-        for j in col:
-            M[i][j] *= n
+    M = createMatrix(row, col)
+    for i in range(row):
+        for j in range(col):
+            M[i][j] = Matrix[i][j] * n
     return M
 
 # {fungsi yang mengembalikan perkalian matrix Matrix1 dan Matrix2}
@@ -125,55 +142,132 @@ def intoOneRow(Matrix):
 def intoOneCol(Matrix):
     return transpose(intoOneRow(Matrix))
 
+# Operasi vektor
+# {fungsi selektor matrix untuk mendapatkan 1 vektor dr matrix}
+def getVector(Matrix, col):
+    row = length(Matrix)
+    result = [0 for i in range(row)]
+    for i in range(row):
+        result[i] = Matrix[i][col]
+    return result
+
+# {fungsi yang menghasilkan penjumlahan dua vektor u dan vektor v}
+def addVector(u, v):
+    l = length(u)
+    result = [0 for i in range(l)]
+    for i in range(l):
+        result[i] = u[i] + v[i]
+    return result
+
+# {fungsi yang menghasilkan pengurangan dua vektor u dan vektor v}
+def subtractVector(u, v):
+    l = length(u)
+    result = [0 for i in range(l)]
+    for i in range(l):
+        result[i] = u[i] - v[i]
+    return result
+
+# {fungsi yang menghasilkan product dari 2 vektor}
+def productVector(u, v):
+    result = 0
+    for i in range(length(u)):
+        result += u[i] * v[i]
+    return result
+
+# {fungsi yang mengalikan vektor u dengan skalar n}
+def scaleVector(u, n):
+    l = length(u)
+    result = [0 for i in range(l)]
+    for i in range(l):
+        result[i] = u[i] * n
+    return result
+
+# {fungsi yang mengembalikan magnitude vektor u}
+def magnitudeVector(u):
+    result = 0;
+    for i in range(length(u)):
+        result += u[i]*u[i]
+    return (result**0.5)
+
+# {fungsi yang mengembalikan proyeksi vektor u pada v}
+def orthoProjectVector(u, v):
+    return (scaleVector(u, productVector(u,v)/productVector(u,u)))
+
+# {fungsi yang menghasilkan matrix Q dari dekomposisi QR}
+def QR(Matrix):
+    Q = copyMatrix(Matrix)
+    m = length(Matrix)
+    n = length(Matrix[0])
+    for j in range(n):
+        u = getVector(Q, j)
+        v = getVector(Q, j)
+        for k in range(j-1,0-1,-1):
+            uk = getVector(Q, k)
+            u = subtractVector(u, orthoProjectVector(uk,v))
+        for i in range(n):
+            Q[i][j] = u[i]
+    for j in range(n):
+        u = getVector(Q, j)
+        magnitude = magnitudeVector(u)
+        for i in range(n):
+            Q[i][j] = u[i] / magnitude
+    temp = multiplyMatrix(transpose(Q),Matrix)
+    R = createMatrix(m, n)
+    for i in range(m):
+        for j in range(n):
+            if (j >= i):
+                R[i][j] = temp[i][j]
+    return Q,R
+
 # {fungsi yang menghasilkan matrix segitiga atas dari suatu matrix}
-def intoUpperTriangle(Matrix):
-    M = copyMatrix(Matrix)
-    rowM = length(M)
-    colM = length(M[0])
-    def kurangBasis(row, rowBasis):
-        for i in range(rowM):
-            M[row][i] -= rowBasis[i]
-    def tambahBasis(row, rowBasis):
-        for i in range(colM):
-            M[row][i] += rowBasis[i]
-    def rowKaliConst(row, n):
-        for i in range(colM):
-            M[row][i] *= n
-    def listKaliConst(list, n):
-        for i in range(length(list)):
-            list[i] *= n
-    def swapRow(row1, row2):
-        Mcopy = copyMatrix(M)
-        for i in range(colM):
-            M[row1][i] = Mcopy[row2][i]
-            M[row2][i] = Mcopy[row1][i]
-    for idxBasis in range(rowM-1):
-        basis = [0 for i in range(colM)]
-        # jika nilai basis diawali 0, tuker sama yang non 0
-        if (M[idxBasis][idxBasis]==0):
-            scanNot0 = idxBasis+1
-            while (scanNot0 < rowM and M[scanNot0][idxBasis]==0):
-                scanNot0+=1
-            if (scanNot0>=rowM):
-                continue
-            else:
-                swapRow(idxBasis,scanNot0)
-        # mengisi basis dari baris yang dijadikan baris 1 utama
-        for i in range(colM):
-            basis[i] = M[idxBasis][i]/M[idxBasis][idxBasis]
-        elimRow = idxBasis + 1
-        while (elimRow<rowM):
-            while (M[elimRow][idxBasis]!=0):
-                if (M[elimRow][idxBasis]>0 and M[elimRow][idxBasis]<1):
-                    pecahan = M[elimRow][idxBasis]
-                    basisAdapt = [basis[i] for i in range(length(basis))]
-                    listKaliConst(basisAdapt, pecahan)
-                    kurangBasis(elimRow, basisAdapt)
-                elif (M[elimRow][idxBasis]>0):
-                    kurangBasis(elimRow, basis)
-                elif (M[elimRow][idxBasis]<0):
-                    tambahBasis(elimRow, basis)
-            elimRow+=1
+# def intoR(Matrix):
+    # M = copyMatrix(Matrix)
+    # rowM = length(M)
+    # colM = length(M[0])
+    # def kurangBasis(row, rowBasis):
+    #     for i in range(rowM):
+    #         M[row][i] -= rowBasis[i]
+    # def tambahBasis(row, rowBasis):
+    #     for i in range(colM):
+    #         M[row][i] += rowBasis[i]
+    # def rowKaliConst(row, n):
+    #     for i in range(colM):
+    #         M[row][i] *= n
+    # def listKaliConst(list, n):
+    #     for i in range(length(list)):
+    #         list[i] *= n
+    # def swapRow(row1, row2):
+    #     Mcopy = copyMatrix(M)
+    #     for i in range(colM):
+    #         M[row1][i] = Mcopy[row2][i]
+    #         M[row2][i] = Mcopy[row1][i]
+    # for idxBasis in range(rowM-1):
+    #     basis = [0 for i in range(colM)]
+    #     # jika nilai basis diawali 0, tuker sama yang non 0
+    #     if (M[idxBasis][idxBasis]==0):
+    #         scanNot0 = idxBasis+1
+    #         while (scanNot0 < rowM and M[scanNot0][idxBasis]==0):
+    #             scanNot0+=1
+    #         if (scanNot0>=rowM):
+    #             continue
+    #         else:
+    #             swapRow(idxBasis,scanNot0)
+    #     # mengisi basis dari baris yang dijadikan baris 1 utama
+    #     for i in range(colM):
+    #         basis[i] = M[idxBasis][i]/M[idxBasis][idxBasis]
+    #     elimRow = idxBasis + 1
+    #     while (elimRow<rowM):
+    #         while (M[elimRow][idxBasis]!=0):
+    #             if (M[elimRow][idxBasis]>0 and M[elimRow][idxBasis]<1):
+    #                 pecahan = M[elimRow][idxBasis]
+    #                 basisAdapt = [basis[i] for i in range(length(basis))]
+    #                 listKaliConst(basisAdapt, pecahan)
+    #                 kurangBasis(elimRow, basisAdapt)
+    #             elif (M[elimRow][idxBasis]>0):
+    #                 kurangBasis(elimRow, basis)
+    #             elif (M[elimRow][idxBasis]<0):
+    #                 tambahBasis(elimRow, basis)
+    #         elimRow+=1
     return M
 
 # w dan h adalah width dan height gambar dalam pixel-pixel
@@ -228,6 +322,23 @@ def searchImg (folder):
 # C = multiplyMatrix(A, transpose(A))
 # print("Kovarian")
 # printMatrix(C)
+
+# # Step 2
+# meanofmatrix = [[0 for i in range(256)] for j in range(256)]
+# for i in range (256):
+#     for j in range (256):
+#         meanofmatrix[i][j] = 0
+#         meanofmatrix[i][j] = meanofmatrix[i][j] + img[i][j]
+#         meanofmatrix[i][j] = meanofmatrix / totaldataset
+
+# # Step 3
+# for i in range (256):
+#     for j in range (256):
+#         img[i][j] = img[i][j] - meanofmatrix
+
+# # Step 4
+# img[i][j] * transpose(img[i][j])
+
 # Mtest = [
 #     [5,7],
 #     [10,8]
@@ -243,16 +354,15 @@ def searchImg (folder):
 #     [4,2,9,2],
 #     [4,8,8,5]
 # ]
-Mtest = [
-    [0,7,7,9,3,2],
-    [0,8,9,3,4,7],
-    [0,2,9,2,6,1],
-    [0,8,8,5,4,1],
-    [0,3,2,8,7,9],
-    [0,8,7,11,4,10]
-]
-print("----Matrix awal----")
-printMatrix(Mtest)
-u = intoUpperTriangle(Mtest)
-print("----Result----")
-printMatrix(u)
+# Mtest = [
+#     [0,7,7,9,3,2],
+#     [0,8,9,3,4,7],
+#     [0,2,9,2,6,1],
+#     [0,8,8,5,4,1],
+#     [0,3,2,8,7,9],
+#     [0,8,7,11,4,10]
+# ]
+
+qr = QR(Mtest)
+printMatrix(qr[0])
+printMatrix(qr[1])
