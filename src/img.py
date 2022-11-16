@@ -8,7 +8,13 @@ from numpy import *
 def createMatrix(row, col):
     Matrix = [[0 for i in range(col)] for j in range(row)]
     return Matrix
-
+def createIdentity(row,col):
+    Matrix = createMatrix(row,col)
+    for i in range(row):
+        for j in range(col):
+            if (i==j):
+                Matrix[i][j] = 1
+    return Matrix
 def length(list):
     l = list
     ctr = 0
@@ -193,32 +199,50 @@ def magnitudeVector(u):
 def orthoProjectVector(u, v):
     return (scaleVector(u, productVector(u,v)/productVector(u,u)))
 
-# {fungsi yang menghasilkan matrix Q dari dekomposisi QR}
+# {fungsi yang menghasilkan dekomposisi QR dari suatu matrix}
 def QR(Matrix):
     Q = copyMatrix(Matrix)
-    m = length(Matrix)
-    n = length(Matrix[0])
-    for j in range(n):
+    row = length(Matrix)
+    col = length(Matrix[0])
+    for j in range(col):
         u = getVector(Q, j)
         v = getVector(Q, j)
         for k in range(j-1,0-1,-1):
             uk = getVector(Q, k)
             u = subtractVector(u, orthoProjectVector(uk,v))
-        for i in range(n):
-            Q[i][j] = u[i]
-    for j in range(n):
-        u = getVector(Q, j)
-        magnitude = magnitudeVector(u)
-        for i in range(n):
-            Q[i][j] = u[i] / magnitude
+        for i in range(col):
+            Q[i][j] = u[i] / magnitudeVector(u)
     temp = multiplyMatrix(transpose(Q),Matrix)
-    R = createMatrix(m, n)
-    for i in range(m):
-        for j in range(n):
+    R = createMatrix(row, col)
+    for i in range(row):
+        for j in range(row):
             if (j >= i):
                 R[i][j] = temp[i][j]
     return Q,R
 
+# {fungsi yang menghasilkan nilai-nilai eigen suatu matrix dengan dekomposisi QR, dengan suatu banyak iterasi}
+def eigenvalue(Matrix, iteration):
+    M = copyMatrix(Matrix)
+    l = length(Matrix)
+    result = [0 for i in range(l)]
+    for i in range(iteration):
+        [Q,R] = QR(M)
+        M = multiplyMatrix(R,Q)
+    for i in range(l):
+        result[i] = M[i][i]
+    return result
+
+# {fungsi yang menghasilkan nilai vektor-vektor eigen Matrix}
+def eigenvector(Matrix, iteration):
+    row = length(Matrix)
+    col = length(Matrix[0])
+    M = copyMatrix(Matrix)
+    I = createIdentity(row, col)
+    for i in range(iteration):
+        [Q,R] = QR(M)
+        M = multiplyMatrix(R,Q)
+        I = multiplyMatrix(I,Q)
+    return I
 # {fungsi yang menghasilkan matrix segitiga atas dari suatu matrix}
 # def intoR(Matrix):
     # M = copyMatrix(Matrix)
@@ -268,7 +292,7 @@ def QR(Matrix):
     #             elif (M[elimRow][idxBasis]<0):
     #                 tambahBasis(elimRow, basis)
     #         elimRow+=1
-    return M
+    # return M
 
 # w dan h adalah width dan height gambar dalam pixel-pixel
 # def search (folder):
@@ -344,10 +368,15 @@ def searchImg (folder):
 #     [10,8]
 # ]
 # Mtest = [
-#     [5,7,7],
-#     [10,8,9],
-#     [4,2,9]
+#     [1,2,3],
+#     [4,5,6],
+#     [7,8,9]
 # ]
+Mtest = [
+    [5,7,7],
+    [10,8,9],
+    [4,2,9]
+]
 # Mtest = [
 #     [5,7,7,9],
 #     [10,8,9,3],
@@ -355,14 +384,14 @@ def searchImg (folder):
 #     [4,8,8,5]
 # ]
 # Mtest = [
-#     [0,7,7,9,3,2],
-#     [0,8,9,3,4,7],
-#     [0,2,9,2,6,1],
-#     [0,8,8,5,4,1],
-#     [0,3,2,8,7,9],
-#     [0,8,7,11,4,10]
+#     [5,7,7,9,3,2],
+#     [10,8,9,3,4,7],
+#     [4,2,9,2,6,1],
+#     [4,8,8,5,4,1],
+#     [6,3,2,8,7,9],
+#     [6,8,7,11,4,10]
 # ]
 
-qr = QR(Mtest)
-printMatrix(qr[0])
-printMatrix(qr[1])
+print(eigenvalue(Mtest,1024))
+print()
+printMatrix(eigenvector(Mtest,1024))
