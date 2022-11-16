@@ -16,6 +16,15 @@ def length(list):
         ctr+=1
     return ctr
 
+# {fungsi yang menghasilkan salinan suatu matriks}
+def copyMatrix(Matrix):
+    rowCopy = length(Matrix)
+    colCopy = length(Matrix[0])
+    copy = [[0 for j in range(colCopy)] for i in range(rowCopy)]
+    for i in range(rowCopy):
+        for j in range(colCopy):
+            copy[i][j] = Matrix[i][j]
+    return copy
 # {Prosedur print matrix}
 def printMatrix(Matrix):
     row = length(Matrix)
@@ -116,6 +125,57 @@ def intoOneRow(Matrix):
 def intoOneCol(Matrix):
     return transpose(intoOneRow(Matrix))
 
+# {fungsi yang menghasilkan matrix segitiga atas dari suatu matrix}
+def intoUpperTriangle(Matrix):
+    M = copyMatrix(Matrix)
+    rowM = length(M)
+    colM = length(M[0])
+    def kurangBasis(row, rowBasis):
+        for i in range(rowM):
+            M[row][i] -= rowBasis[i]
+    def tambahBasis(row, rowBasis):
+        for i in range(colM):
+            M[row][i] += rowBasis[i]
+    def rowKaliConst(row, n):
+        for i in range(colM):
+            M[row][i] *= n
+    def listKaliConst(list, n):
+        for i in range(length(list)):
+            list[i] *= n
+    def swapRow(row1, row2):
+        Mcopy = copyMatrix(M)
+        for i in range(colM):
+            M[row1][i] = Mcopy[row2][i]
+            M[row2][i] = Mcopy[row1][i]
+    for idxBasis in range(rowM-1):
+        basis = [0 for i in range(colM)]
+        # jika nilai basis diawali 0, tuker sama yang non 0
+        if (M[idxBasis][idxBasis]==0):
+            scanNot0 = idxBasis+1
+            while (scanNot0 < rowM and M[scanNot0][idxBasis]==0):
+                scanNot0+=1
+            if (scanNot0>=rowM):
+                continue
+            else:
+                swapRow(idxBasis,scanNot0)
+        # mengisi basis dari baris yang dijadikan baris 1 utama
+        for i in range(colM):
+            basis[i] = M[idxBasis][i]/M[idxBasis][idxBasis]
+        elimRow = idxBasis + 1
+        while (elimRow<rowM):
+            while (M[elimRow][idxBasis]!=0):
+                if (M[elimRow][idxBasis]>0 and M[elimRow][idxBasis]<1):
+                    pecahan = M[elimRow][idxBasis]
+                    basisAdapt = [basis[i] for i in range(length(basis))]
+                    listKaliConst(basisAdapt, pecahan)
+                    kurangBasis(elimRow, basisAdapt)
+                elif (M[elimRow][idxBasis]>0):
+                    kurangBasis(elimRow, basis)
+                elif (M[elimRow][idxBasis]<0):
+                    tambahBasis(elimRow, basis)
+            elimRow+=1
+    return M
+
 # w dan h adalah width dan height gambar dalam pixel-pixel
 # def search (folder):
 #     images = [file for file in os.listdir(ui.folder) if file.endswith(('jpeg', 'png', 'jpg'))]
@@ -148,8 +208,51 @@ def searchImg (folder):
 # width = 256
 # Matrix = createMatrix(height, width)
 
-# fileCount = 0                               #untuk menghitung jumlah file jadi harusnya seukuran M. Ini hanya untuk contoh
-# for i in range(M):
-#     addMatrix(trainingMatrix, numpydata) #matrix-matrix dijumlahkan
-#     fileCount+=1
-# meanTrainingMatrix = kaliConstMatrix(trainingMatrix, 1/fileCount, 540, 540)   #menghitung mean matrix(?)
+#test (mencari matrix kovarian)
+# M1 = [
+#     [2,0,1],
+#     [1,2,0],
+#     [0,2,4]
+# ]
+# M2 = [
+#     [1,1,1],
+#     [0,1,0],
+#     [1,2,2]
+# ]
+# trainingMatrix = addMatrix(trainingMatrix,M1)
+# trainingMatrix = addMatrix(trainingMatrix,M2)
+# meanTrainingMatrix = kaliConstMatrix(trainingMatrix, 1/fileCount)   #menghitung mean matrix(?)
+# A = concatMatrix(meanDiffM1, meanDiffM2)
+# print("concat of meandiffs")
+# printMatrix(A)
+# C = multiplyMatrix(A, transpose(A))
+# print("Kovarian")
+# printMatrix(C)
+# Mtest = [
+#     [5,7],
+#     [10,8]
+# ]
+# Mtest = [
+#     [5,7,7],
+#     [10,8,9],
+#     [4,2,9]
+# ]
+# Mtest = [
+#     [5,7,7,9],
+#     [10,8,9,3],
+#     [4,2,9,2],
+#     [4,8,8,5]
+# ]
+Mtest = [
+    [0,7,7,9,3,2],
+    [0,8,9,3,4,7],
+    [0,2,9,2,6,1],
+    [0,8,8,5,4,1],
+    [0,3,2,8,7,9],
+    [0,8,7,11,4,10]
+]
+print("----Matrix awal----")
+printMatrix(Mtest)
+u = intoUpperTriangle(Mtest)
+print("----Result----")
+printMatrix(u)
