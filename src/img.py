@@ -15,6 +15,8 @@ def createIdentity(row,col):
             if (i==j):
                 Matrix[i][j] = 1
     return Matrix
+
+# {fungsi yang mengembalikan length suatu list}
 def length(list):
     l = list
     ctr = 0
@@ -190,7 +192,7 @@ def scaleVector(u, n):
 
 # {fungsi yang mengembalikan magnitude vektor u}
 def magnitudeVector(u):
-    result = 0;
+    result = 0
     for i in range(length(u)):
         result += u[i]*u[i]
     return (result**0.5)
@@ -247,166 +249,62 @@ def eigenvector(Matrix, EigenVal):
         result.append(EigVec)
     return result
     
-# {fungsi yang menghasilkan matrix segitiga atas dari suatu matrix}
-# def intoR(Matrix):
-    # M = copyMatrix(Matrix)
-    # rowM = length(M)
-    # colM = length(M[0])
-    # def kurangBasis(row, rowBasis):
-    #     for i in range(rowM):
-    #         M[row][i] -= rowBasis[i]
-    # def tambahBasis(row, rowBasis):
-    #     for i in range(colM):
-    #         M[row][i] += rowBasis[i]
-    # def rowKaliConst(row, n):
-    #     for i in range(colM):
-    #         M[row][i] *= n
-    # def listKaliConst(list, n):
-    #     for i in range(length(list)):
-    #         list[i] *= n
-    # def swapRow(row1, row2):
-    #     Mcopy = copyMatrix(M)
-    #     for i in range(colM):
-    #         M[row1][i] = Mcopy[row2][i]
-    #         M[row2][i] = Mcopy[row1][i]
-    # for idxBasis in range(rowM-1):
-    #     basis = [0 for i in range(colM)]
-    #     # jika nilai basis diawali 0, tuker sama yang non 0
-    #     if (M[idxBasis][idxBasis]==0):
-    #         scanNot0 = idxBasis+1
-    #         while (scanNot0 < rowM and M[scanNot0][idxBasis]==0):
-    #             scanNot0+=1
-    #         if (scanNot0>=rowM):
-    #             continue
-    #         else:
-    #             swapRow(idxBasis,scanNot0)
-    #     # mengisi basis dari baris yang dijadikan baris 1 utama
-    #     for i in range(colM):
-    #         basis[i] = M[idxBasis][i]/M[idxBasis][idxBasis]
-    #     elimRow = idxBasis + 1
-    #     while (elimRow<rowM):
-    #         while (M[elimRow][idxBasis]!=0):
-    #             if (M[elimRow][idxBasis]>0 and M[elimRow][idxBasis]<1):
-    #                 pecahan = M[elimRow][idxBasis]
-    #                 basisAdapt = [basis[i] for i in range(length(basis))]
-    #                 listKaliConst(basisAdapt, pecahan)
-    #                 kurangBasis(elimRow, basisAdapt)
-    #             elif (M[elimRow][idxBasis]>0):
-    #                 kurangBasis(elimRow, basis)
-    #             elif (M[elimRow][idxBasis]<0):
-    #                 tambahBasis(elimRow, basis)
-    #         elimRow+=1
-    # return M
-
-# w dan h adalah width dan height gambar dalam pixel-pixel
-# def search (folder):
-#     images = [file for file in os.listdir(ui.folder) if file.endswith(('jpeg', 'png', 'jpg'))]
-#     for img in images:
-#         image = Image.open(img)
-#         print(f"Original size : {image.size}")
-#         pixel=image.load()
-
-#         image_grayscale= image.convert('L')
-#         test_resized = image_grayscale.resize((256, 256))
-#         # test_resized.save('test_resized.jpg')
-#         test_resized.show()
-
-#         np_resized = np.array(test_resized)
-#         print("Ukuran barunya:",np_resized.shape)
-
-#         numpydata = asarray(test_resized)
-#         print("Matriks numpy:",numpydata)
-
-def searchImg (folder):
+# {mengakses semua image di dalam image dan mengeluarkan matrix grayscale yang diresize}
+def accessImage (folder):
     for (root,dirs,files) in os.walk(folder, topdown=True):
-        print ("|------------------------------------------|")
-        print ("|                                          |")
-        print (root)
-        print ("|                                          |")
-        print ("|------------------------------------------|")
-        print (files)
+        for i in files:
+            directory = root + "\\" + i
+            image = Image.open(directory,mode='r').convert('L').resize([256,256])
+            ar = np.array(image)
+            matrix = asarray(ar)                #matrix = masing-masing gambar dalam bentuk matrix
+            # print(matrix)
 
-# height = 256
-# width = 256
-# Matrix = createMatrix(height, width)
+# {fungsi yang mengakses dataset, mengubah image-image menjadi ukuran tertentu, grayscale dan menjadi 1 baris, lalu mengonkatenasi semuanya untuk diproses}
+def datasetToArray (folder):
+    result = []
+    for (root,dirs,files) in os.walk(folder, topdown=True):
+        for i in files:
+            directory = root + "\\" + i
+            image = Image.open(directory,mode='r').convert('L').resize([256,256])
+            ar = np.array(image)
+            matrix = asarray(ar)
+            row = intoOneRow(matrix)
+            result.append(row[0])
+    return result
+# {fungsi yang mengakses dataset, mengubah image-image menjadi ukuran tertentu, grayscale dan menjadi 1 baris, lalu mengonkatenasi semuanya untuk diproses}
+# {fungsi ini sama dengan dataSetToArray() tapi menambahkan batasan jumlah foto}
+# {untuk tidak membatasi banyak matrix yang dihasilkan, amount diinput -1}
+def datasetToArray_FixedAmount (folder, amount):
+    result = []
+    ctr = 0
+    for (root,dirs,files) in os.walk(folder, topdown=True):
+        for i in files:
+            ctr+=1
+            if (ctr>amount and ctr>0):
+                break
+            directory = root + "\\" + i
+            image = Image.open(directory,mode='r').convert('L').resize([256,256])
+            ar = np.array(image)
+            matrix = asarray(ar)
+            row = intoOneRow(matrix)
+            result.append(row[0])
+    return result
 
-#test (mencari matrix kovarian)
-# M1 = [
-#     [2,0,1],
-#     [1,2,0],
-#     [0,2,4]
-# ]
-# M2 = [
-#     [1,1,1],
-#     [0,1,0],
-#     [1,2,2]
-# ]
-# trainingMatrix = addMatrix(trainingMatrix,M1)
-# trainingMatrix = addMatrix(trainingMatrix,M2)
-# meanTrainingMatrix = kaliConstMatrix(trainingMatrix, 1/fileCount)   #menghitung mean matrix(?)
-# A = concatMatrix(meanDiffM1, meanDiffM2)
-# print("concat of meandiffs")
-# printMatrix(A)
-# C = multiplyMatrix(A, transpose(A))
-# print("Kovarian")
-# printMatrix(C)
+# {menghitung jumlah file}
+def numberOfImage (folder):
+    sum = 0
+    for (root,dirs,files) in os.walk(folder, topdown=True):
+        for i in files:
+            sum+=1
+    return sum
 
-# # Step 2
-# meanofmatrix = [[0 for i in range(256)] for j in range(256)]
-# for i in range (256):
-#     for j in range (256):
-#         meanofmatrix[i][j] = 0
-#         meanofmatrix[i][j] = meanofmatrix[i][j] + img[i][j]
-#         meanofmatrix[i][j] = meanofmatrix / totaldataset
+# print(numberOfImage("../test/dataset/pins_camila mendes"))
+# print(sumImage("../test/dataset/pins_camila mendes")/numberOfImage("../test/dataset/pins_camila mendes"))
 
-# # Step 3
-# for i in range (256):
-#     for j in range (256):
-#         img[i][j] = img[i][j] - meanofmatrix
-
-# # Step 4
-# img[i][j] * transpose(img[i][j])
-
-# Mtest = [
-#     [5,7],
-#     [10,8]
-# ]
-# Mtest = [
-#     [1,2,3],
-#     [4,5,6],
-#     [7,8,9]
-# ]
-# Mtest = [
-#     [5,7,7],
-#     [10,8,9],
-#     [4,2,9]
-# ]
-Mtest = [
-    [5,7,7,9],
-    [10,8,9,3],
-    [4,2,9,2],
-    [4,8,8,5]
-]
-# Mtest = [
-#     [5,7,7,9,3,2],
-#     [10,8,9,3,4,7],
-#     [4,2,9,2,6,1],
-#     [4,8,8,5,4,1],
-#     [6,3,2,8,7,9],
-#     [6,8,7,11,4,10]
-# ]
-
-# print(eigenvalue(Mtest,1024))
-# print()
-# printMatrix(eigenvector(Mtest,1024))
-
-
-
-
-
-#   test eigen vector
-EigVal = eigenvalue(Mtest, 1024)
-print(EigVal)
-EigVec = eigenvector(Mtest, EigVal)
-print(EigVec)
-print(np.linalg.eig(Mtest)[1])
+# matrix = []
+# matrix1 = [1,2,3]
+# matrix1 = [[1,2,3],[4,5,6],[7,8,9]]
+# matrix.append(intoOneRow(matrix1))
+# print(intoOneRow(matrix1)[0])
+# printMatrix(intoOneRow(matrix1))
+# printMatrix(matrix)
