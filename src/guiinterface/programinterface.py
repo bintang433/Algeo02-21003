@@ -62,6 +62,12 @@ button2resized=button2.resize((180,40), Image.ANTIALIAS)
 buttoninp2 = ImageTk.PhotoImage(button2resized)
 btn2=tk.Button(window, image=buttoninp2,borderwidth=0, relief='solid',bg='black', activebackground='black',command=open_file)
 btn2.place(x=75, y=490)
+# button unutk result
+button3 = Image.open("button3.png")
+button3resized=button3.resize((307,132), Image.ANTIALIAS)
+buttoninp3 = ImageTk.PhotoImage(button3resized)
+btn2=tk.Button(window, image=buttoninp3,borderwidth=0, relief='solid',bg='black', activebackground='black')
+btn2.place(x=75, y=625)
 
 # konfigurasi windows
 window.configure(bg='#FFD800')
