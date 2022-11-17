@@ -26,11 +26,11 @@ lblshowresultpic=Label(window, image=new_blankpic, borderwidth=3, relief='solid'
 lblshowresultpic.place(x=1117, y=369, height=256, width=256)
 
 folder = ''
-folderlabel=Label(window, text=folder,fg='black', bg='#D1FFFC', font='Helvetica 10 bold italic')
+folderlabel=Label(window, text=folder[10:],fg='black', bg='#D1FFFC', font='Helvetica 10 bold italic')
 folderlabel.place(x=75, y=362)
 
 file = ''
-filelabel=Label(window, text=folder,fg='black', bg='#D1FFFC', font='Helvetica 10 bold italic')
+filelabel=Label(window, text=folder[10:],fg='black', bg='#D1FFFC', font='Helvetica 10 bold italic')
 filelabel.place(x=75, y=552)
 
 # procedure untuk membuka file gambar
