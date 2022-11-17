@@ -233,16 +233,20 @@ def eigenvalue(Matrix, iteration):
     return result
 
 # {fungsi yang menghasilkan nilai vektor-vektor eigen Matrix}
-def eigenvector(Matrix, iteration):
-    row = length(Matrix)
-    col = length(Matrix[0])
-    M = copyMatrix(Matrix)
-    I = createIdentity(row, col)
-    for i in range(iteration):
-        [Q,R] = QR(M)
-        M = multiplyMatrix(R,Q)
-        I = multiplyMatrix(I,Q)
-    return I
+def eigenvector(Matrix, EigenVal):
+    result = []
+    for i in range(length(EigenVal)):
+        tempMat = copyMatrix(Matrix)
+        tempEigVal = [EigenVal[i] for j in range(length(EigenVal))]
+        for j in range(length(EigenVal)):
+            tempMat[j][j] -= tempEigVal[j]
+        EigVec = np.linalg.solve(tempMat, tempEigVal)
+        norm = magnitudeVector(EigVec)
+        for j in range(length(EigVec)):
+            EigVec[j] /= norm
+        result.append(EigVec)
+    return result
+    
 # {fungsi yang menghasilkan matrix segitiga atas dari suatu matrix}
 # def intoR(Matrix):
     # M = copyMatrix(Matrix)
@@ -372,17 +376,17 @@ def searchImg (folder):
 #     [4,5,6],
 #     [7,8,9]
 # ]
-Mtest = [
-    [5,7,7],
-    [10,8,9],
-    [4,2,9]
-]
 # Mtest = [
-#     [5,7,7,9],
-#     [10,8,9,3],
-#     [4,2,9,2],
-#     [4,8,8,5]
+#     [5,7,7],
+#     [10,8,9],
+#     [4,2,9]
 # ]
+Mtest = [
+    [5,7,7,9],
+    [10,8,9,3],
+    [4,2,9,2],
+    [4,8,8,5]
+]
 # Mtest = [
 #     [5,7,7,9,3,2],
 #     [10,8,9,3,4,7],
@@ -392,6 +396,17 @@ Mtest = [
 #     [6,8,7,11,4,10]
 # ]
 
-print(eigenvalue(Mtest,1024))
-print()
-printMatrix(eigenvector(Mtest,1024))
+# print(eigenvalue(Mtest,1024))
+# print()
+# printMatrix(eigenvector(Mtest,1024))
+
+
+
+
+
+#   test eigen vector
+EigVal = eigenvalue(Mtest, 1024)
+print(EigVal)
+EigVec = eigenvector(Mtest, EigVal)
+print(EigVec)
+print(np.linalg.eig(Mtest)[1])
