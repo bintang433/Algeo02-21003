@@ -268,26 +268,25 @@ def datasetToArray (folder):
             image = Image.open(directory,mode='r').convert('L').resize([256,256])
             ar = np.array(image)
             matrix = asarray(ar)
-            row = intoOneRow(matrix)
-            result.append(row[0])
+            result.append(intoOneRow(matrix)[0])
     return result
 # {fungsi yang mengakses dataset, mengubah image-image menjadi ukuran tertentu, grayscale dan menjadi 1 baris, lalu mengonkatenasi semuanya untuk diproses}
 # {fungsi ini sama dengan dataSetToArray() tapi menambahkan batasan jumlah foto}
 # {untuk tidak membatasi banyak matrix yang dihasilkan, amount diinput -1}
 def datasetToArray_FixedAmount (folder, amount):
     result = []
-    ctr = 0
+    ctr=0
     for (root,dirs,files) in os.walk(folder, topdown=True):
         for i in files:
-            ctr+=1
-            if (ctr>amount and ctr>0):
+            if ctr>=amount:
                 break
             directory = root + "\\" + i
             image = Image.open(directory,mode='r').convert('L').resize([256,256])
             ar = np.array(image)
             matrix = asarray(ar)
-            row = intoOneRow(matrix)
-            result.append(row[0])
+            result.append(intoOneRow(matrix)[0])
+            ctr+=1
+        ctr=0
     return result
 
 # {menghitung jumlah file}
@@ -302,9 +301,19 @@ def numberOfImage (folder):
 # print(sumImage("../test/dataset/pins_camila mendes")/numberOfImage("../test/dataset/pins_camila mendes"))
 
 # matrix = []
-# matrix1 = [1,2,3]
 # matrix1 = [[1,2,3],[4,5,6],[7,8,9]]
-# matrix.append(intoOneRow(matrix1))
-# print(intoOneRow(matrix1)[0])
+# matrix2 = [[1,2,3],[4,5,6],[7,8,9]]
+# matrix3 = [[1,2,3],[4,5,6],[7,8,9]]
+# print("matrix 1:")
+# printMatrix(matrix1)
+# print("matrix 1 into 1 row: ")
 # printMatrix(intoOneRow(matrix1))
+# matrix.append(intoOneRow(matrix1)[0])
+# matrix.append(intoOneRow(matrix2)[0])
+# matrix.append(intoOneRow(matrix3)[0])
 # printMatrix(matrix)
+# print("banyak baris:", length(matrix))
+ds2A = datasetToArray_FixedAmount("../test/dataset", 1)
+printMatrix(ds2A)
+print("banyak baris (harusnya 105):",length(ds2A))
+print("banyak kolom (harusnya 65536):", length(ds2A[0]))
