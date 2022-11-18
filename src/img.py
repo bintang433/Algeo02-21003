@@ -25,20 +25,26 @@ def length(list):
     return ctr
 
 # {Fungsi selektor 1 baris suatu Matrix}
-def getRow(Matrix, row):
+def getRow(Matrix, row, asList):
     col = length(Matrix[0])
     result = createMatrix(1, col)
     for i in range(col):
         result[0][i] = Matrix[row][i]
-    return result
+    if (asList):
+        return result[0]
+    else : 
+        return result
 
 # {Fungsi selektor 1 kolom suatu Matrix}
-def getCol(Matrix, col):
+def getCol(Matrix, col, asList):
     row = length(Matrix)
     result = createMatrix(row, 1)
     for i in range(row):
         result[i][0] = Matrix[i][col]
-    return result
+    if (asList):
+        return transpose(result)[0]
+    else:
+        return result
 
 # {fungsi yang menghasilkan salinan suatu matriks}
 def copyMatrix(Matrix):
@@ -84,7 +90,7 @@ def subtractMatrix(Matrix1, Matrix2):
     return M
 
 # {fungsi yang mengembalikan matriks Md yang dikali konstanta n}
-def kaliConstMatrix(Matrix, n):
+def multiplyByConstMatrix(Matrix, n):
     row = length(Matrix)
     col = length(Matrix[0])
     M = createMatrix(row, col)
@@ -149,6 +155,35 @@ def intoOneRow(Matrix):
 # {fungsi yang mengembalikan suatu matrix yang dijadikan 1 kolom dengan konkatenasi dan transpose}
 def intoOneCol(Matrix):
     return transpose(intoOneRow(Matrix))
+
+# Operasi baris matrix
+# {fungsi yang mengurangkan row1 dengan row2}
+def addRow(row1, row2):
+    l = length(row1)
+    result = [0 for i in range(l)]
+    for i in range(l):
+        result[i] = row1[i] + row2[i]
+    return result
+# {fungsi yang menjumlahkan row1 dengan row2}
+def subtractRow(row1, row2):
+    l = length(row1)
+    result = [0 for i in range(l)]
+    for i in range(l):
+        result[i] = row1[i] - row2[i]
+    return result
+# {fungsi yang mengalikan row dengan n}
+def multiplyByConstRow(baris, n):
+    l = length(baris)
+    result = [0 for i in range(l)]
+    for i in range(l):
+        result[i] = baris[i] * n
+    return result
+# def swapRow(M, row1, row2):
+#     colM = length(M[0])
+#     Mcopy = copyMatrix(M)               #inefficent for image matrices, if fixing, make copy of row instead of matrix
+#     for i in range(colM):
+#         M[row1][i] = Mcopy[row2][i]
+#         M[row2][i] = Mcopy[row1][i]
 
 # Operasi vektor
 # {fungsi selektor matrix untuk mendapatkan 1 vektor dr matrix}
@@ -248,7 +283,8 @@ def eigenvector(Matrix, EigenVal):
             EigVec[j] /= norm
         result.append(EigVec)
     return result
-    
+
+# Operator Image
 # {mengakses semua image di dalam image dan mengeluarkan matrix grayscale yang diresize}
 def accessImage (folder):
     for (root,dirs,files) in os.walk(folder, topdown=True):
@@ -278,7 +314,7 @@ def datasetToArray_FixedAmount (folder, amount):
     ctr=0
     for (root,dirs,files) in os.walk(folder, topdown=True):
         for i in files:
-            if ctr>=amount:
+            if ctr>=amount and ctr>=0:
                 break
             directory = root + "\\" + i
             image = Image.open(directory,mode='r').convert('L').resize([256,256])
@@ -297,23 +333,41 @@ def numberOfImage (folder):
             sum+=1
     return sum
 
-# print(numberOfImage("../test/dataset/pins_camila mendes"))
-# print(sumImage("../test/dataset/pins_camila mendes")/numberOfImage("../test/dataset/pins_camila mendes"))
-
-# matrix = []
-# matrix1 = [[1,2,3],[4,5,6],[7,8,9]]
-# matrix2 = [[1,2,3],[4,5,6],[7,8,9]]
-# matrix3 = [[1,2,3],[4,5,6],[7,8,9]]
-# print("matrix 1:")
-# printMatrix(matrix1)
-# print("matrix 1 into 1 row: ")
-# printMatrix(intoOneRow(matrix1))
-# matrix.append(intoOneRow(matrix1)[0])
-# matrix.append(intoOneRow(matrix2)[0])
-# matrix.append(intoOneRow(matrix3)[0])
-# printMatrix(matrix)
-# print("banyak baris:", length(matrix))
-ds2A = datasetToArray_FixedAmount("../test/dataset", 1)
-printMatrix(ds2A)
-print("banyak baris (harusnya 105):",length(ds2A))
-print("banyak kolom (harusnya 65536):", length(ds2A[0]))
+def covariant (folder):
+    ds2A = datasetToArray_FixedAmount(folder)
+    # printMatrix(ds2A)
+    # ds2A = [[1,2,3],[4,5,6],[7,8,9]]
+    print("banyak baris (harusnya 105):",length(ds2A))
+    print("banyak kolom (harusnya 65536):", length(ds2A[0]))
+    #menjumlahkan data-data
+    mean = getRow(ds2A, 0, True)
+    for i in range(1,length(ds2A)):
+        mean = addRow(mean,getRow(ds2A, i, True))
+    #ds2A dibagi banyak data
+    mean = multiplyByConstRow(mean, 1/length(ds2A))
+    #dari sini sudah diperoleh nilai mean dari row-row
+    #mengurangi row-row dengan mean
+    for i in range(length(ds2A)):
+        ds2A[i] = subtractRow(getRow(ds2A, i, True), mean)
+    #mendapatkan matrix kovarian
+    result = multiplyMatrix(transpose(ds2A), ds2A)
+    return result
+def covariant_FixedAmount (folder,amount):
+    ds2A = datasetToArray_FixedAmount(folder, amount)
+    # printMatrix(ds2A)
+    # ds2A = [[1,2,3],[4,5,6],[7,8,9]]
+    print("banyak baris (harusnya 105):",length(ds2A))
+    print("banyak kolom (harusnya 65536):", length(ds2A[0]))
+    #menjumlahkan data-data
+    mean = getRow(ds2A, 0, True)
+    for i in range(1,length(ds2A)):
+        mean = addRow(mean,getRow(ds2A, i, True))
+    #ds2A dibagi banyak data
+    mean = multiplyByConstRow(mean, 1/length(ds2A))
+    #dari sini sudah diperoleh nilai mean dari row-row
+    #mengurangi row-row dengan mean
+    for i in range(length(ds2A)):
+        ds2A[i] = subtractRow(getRow(ds2A, i, True), mean)
+    #mendapatkan matrix kovarian
+    result = multiplyMatrix(transpose(ds2A), ds2A)
+    return result
