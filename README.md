@@ -62,10 +62,12 @@ Langkah-langkah proses menjalankan program adalah sebagai berikut:
 
 ### Panduan Penggunaan Program
 ```bash
-1. Pengguna memilih folder dataset yang terdiri atas banyak foto untuk digunakan sebagai training image
-2. Pengguna memilih file foto input yang akan dites kemiripannya dengan format file .jpg atau .png
-3. Setelah memilih, pengguna bisa mengklik tombol Check Eigenface untuk melakukan proses pengecekan antara 
-   file dengan dataset
+1. Pengguna memilih folder dataset yang terdiri atas banyak foto untuk digunakan 
+   sebagai training image
+2. Pengguna memilih file foto input yang akan dites kemiripannya dengan format file 
+   .jpg atau .png
+3. Setelah memilih, pengguna bisa mengklik tombol Check Eigenface untuk melakukan 
+   proses pengecekan antara file dengan dataset
 ```
 
 
