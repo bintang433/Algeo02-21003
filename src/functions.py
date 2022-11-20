@@ -333,12 +333,9 @@ def numberOfImage (folder):
             sum+=1
     return sum
 
-def covariant (folder):
-    ds2A = datasetToArray_FixedAmount(folder)
-    # printMatrix(ds2A)
-    # ds2A = [[1,2,3],[4,5,6],[7,8,9]]
-    print("banyak baris (harusnya 105):",length(ds2A))
-    print("banyak kolom (harusnya 65536):", length(ds2A[0]))
+#{fungsi yang mengembalikan matrix kovarian dari suatu matrix}
+def covariant (Matrix):
+    ds2A = copyMatrix(Matrix)
     #menjumlahkan data-data
     mean = getRow(ds2A, 0, True)
     for i in range(1,length(ds2A)):
@@ -350,24 +347,5 @@ def covariant (folder):
     for i in range(length(ds2A)):
         ds2A[i] = subtractRow(getRow(ds2A, i, True), mean)
     #mendapatkan matrix kovarian
-    result = multiplyMatrix(transpose(ds2A), ds2A)
-    return result
-def covariant_FixedAmount (folder,amount):
-    ds2A = datasetToArray_FixedAmount(folder, amount)
-    # printMatrix(ds2A)
-    # ds2A = [[1,2,3],[4,5,6],[7,8,9]]
-    print("banyak baris (harusnya 105):",length(ds2A))
-    print("banyak kolom (harusnya 65536):", length(ds2A[0]))
-    #menjumlahkan data-data
-    mean = getRow(ds2A, 0, True)
-    for i in range(1,length(ds2A)):
-        mean = addRow(mean,getRow(ds2A, i, True))
-    #ds2A dibagi banyak data
-    mean = multiplyByConstRow(mean, 1/length(ds2A))
-    #dari sini sudah diperoleh nilai mean dari row-row
-    #mengurangi row-row dengan mean
-    for i in range(length(ds2A)):
-        ds2A[i] = subtractRow(getRow(ds2A, i, True), mean)
-    #mendapatkan matrix kovarian
-    result = multiplyMatrix(transpose(ds2A), ds2A)
+    result = multiplyMatrix(ds2A, transpose(ds2A))
     return result
