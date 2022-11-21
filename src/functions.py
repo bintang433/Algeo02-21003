@@ -314,7 +314,10 @@ def deltaMeanAndCovariant (Matrix3D):
     #mengurangi row-row dengan mean
     for i in range(depth):
         ds2A[i] = subtractMatrix(ds2A[i], mean)
+        if i == 0:
+            cov = copyMatrix(ds2A[i])
+        else :
+            cov = concatMatrix(cov, ds2A[i])
     #mendapatkan matrix kovarian
-    # cov = multiplyMatrix(ds2A, transpose(ds2A))
-    return ds2A
-    # return ds2A, cov
+    cov = multiplyMatrix(cov, transpose(cov))
+    return ds2A, cov
