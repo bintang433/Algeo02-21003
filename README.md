@@ -60,7 +60,7 @@ Langkah-langkah proses menjalankan program adalah sebagai berikut:
 3. Program sudah dapat dijalankan
 ```
 
-### Panduan Penggunaan Program
+## Panduan Penggunaan Program
 ```bash
 1. Pengguna memilih folder dataset yang terdiri atas banyak foto untuk digunakan 
    sebagai training image
