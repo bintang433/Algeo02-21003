@@ -85,8 +85,9 @@ def multiplyMatrix(Matrix1, Matrix2):
 
 # {fungsi yang mengembalikan hasil kali Matrix1 dan Matrix2 dan dibentuk menjadi matrix ukuran }
 def reshapeMultiply(Matrix1, Matrix2, row, col):
+    np.array(Matrix1).reshape(row,col)
     result = multiplyMatrix(Matrix1, Matrix2)
-    return np.array(result).reshape(row, col)
+    return result
 
 # {fungsi yang mengembalikan transpose matrix}
 # fungsi ini menerima matrix lalu mengembalikan hasil transpose matrix tersebut
@@ -229,10 +230,12 @@ def eigenvalue(Matrix, iteration):
     l = len(Matrix)
     result = [0 for i in range(l)]
     for i in range(iteration):
+        print("eigenValue iteration: {} of {}".format(i+1, iteration))
         [Q,R] = QR(M)
         M = multiplyMatrix(R,Q)
     for i in range(l):
         result[i] = M[i][i]
+    result.sort(reverse=True)
     return result
 
 # {fungsi yang menghasilkan nilai vektor-vektor eigen Matrix}
@@ -268,6 +271,7 @@ def accessImage (folder):
     image = Image.open(folder,mode='r').convert('L').resize([256,256])
     ar = np.array(image)
     matrix = asarray(ar)                #matrix = masing-masing gambar dalam bentuk matrix
+    matrix = intoOneCol(matrix)
     return matrix
 # def accessImage (folder):
 #     for (root,dirs,files) in os.walk(folder, topdown=True):
@@ -318,37 +322,45 @@ def numberOfImage (folder):
 
 #{fungsi yang mengembalikan matrix kovarian dari suatu matrix}
 def deltaMeanAndCovariant (Matrix3D):
+    dataset = copyMatrix3D(Matrix3D)
     depth = len(Matrix3D)
     row = len(Matrix3D[0])
     col = len(Matrix3D[0][0])
-    ds2A = copyMatrix3D(Matrix3D)
-    #menjumlahkan data-data
-    mean = [[0 for j in range(col)] for i in range(row)]
+    delta = []
+    #flatten matrix 3D
     for i in range(depth):
-        mean = addMatrix(mean, ds2A[i])
-    #ds2A dibagi banyak data
+        temp = np.array(dataset[i]).flatten()
+        delta.append(temp)
+    #menjumlahkan data-data
+    mean = [0 for j in range(col*row)]
+    meanVector = [mean]
+    for i in range(depth):
+        mean = addRow(mean, delta[i])
+    #delta dibagi banyak data
     mean = multiplyByConstRow(mean, 1/depth)
+    print("Achieved mean of matrices")
     #dari sini sudah diperoleh nilai mean dari row-row
     #mengurangi row-row dengan mean
+    print("Calculating delta mean")
     for i in range(depth):
-        ds2A[i] = subtractMatrix(ds2A[i], mean)
-        if i == 0:
-            cov = copyMatrix(ds2A[i])
-        else :
-            cov = concatMatrix(cov, ds2A[i])
+        delta[i] = subtractRow(delta[i], mean)
+        print("delta mean progress: {:3.2f}%".format((i/depth)*100))
+    #dari sini delta adalah berukuran baris banyak file kolom resolusi**2
     #mendapatkan matrix kovarian
-    cov = multiplyMatrix(cov, transpose(cov))
-    return ds2A, cov
+    cov = multiplyMatrix(delta, transpose(delta))
+    # cov = multiplyMatrix(delta, transpose(delta))
+    print("Achieved covariance matrix")
+    #ukuran matrix kovarian: banyak file x banyak file
+    return transpose(delta), transpose(meanVector), cov
 
 def eigFaces(eigenVectors, deltaMean):
     eigFaces = []
-    for i in range(len(eigenVectors)):
-        eigFace = createMatrix(256, 256)
-        for j in range(len(deltaMean)):
-            temp = reshapeMultiply(getCol(eigenVectors, i, False), deltaMean[j], 256, 256)
-            eigFace = addMatrix(eigFace, temp)
-        eigFaces = concatMatrix(eigFaces, eigFace)
-
+    for i in range(len(eigenVectors[0])):
+        col = getCol(eigenVectors, i, False)
+        temp = transpose(multiplyMatrix(deltaMean, col))
+        eigFaces.append(temp[0])
+        print("eigen face progress: {:3.2f}%".format((i/len(eigenVectors[0]))*100))
+    eigFaces = transpose(eigFaces)
     return eigFaces
 
 def euclidean_distance(x, faces):
