@@ -265,13 +265,18 @@ def copyMatrix3D (Matrix3D):
 # Operator Image
 # {mengakses semua image di dalam image dan mengeluarkan matrix grayscale yang diresize}
 def accessImage (folder):
-    for (root,dirs,files) in os.walk(folder, topdown=True):
-        for i in files:
-            directory = root + "\\" + i
-            image = Image.open(directory,mode='r').convert('L').resize([256,256])
-            ar = np.array(image)
-            matrix = asarray(ar)                #matrix = masing-masing gambar dalam bentuk matrix
-            # print(matrix)
+    image = Image.open(folder,mode='r').convert('L').resize([256,256])
+    ar = np.array(image)
+    matrix = asarray(ar)                #matrix = masing-masing gambar dalam bentuk matrix
+    return matrix
+# def accessImage (folder):
+#     for (root,dirs,files) in os.walk(folder, topdown=True):
+#         for i in files:
+#             directory = root + "\\" + i
+#             image = Image.open(directory,mode='r').convert('L').resize([256,256])
+#             ar = np.array(image)
+#             matrix = asarray(ar)                #matrix = masing-masing gambar dalam bentuk matrix
+#             # print(matrix)
 
 # {fungsi yang mengakses dataset, mengubah image-image menjadi ukuran tertentu, grayscale dan menjadi 1 baris, lalu mengonkatenasi semuanya untuk diproses}
 def datasetToArray (folder):
