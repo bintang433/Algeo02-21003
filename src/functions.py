@@ -346,10 +346,12 @@ def eigFaces(eigenVectors, deltaMean):
 
     return eigFaces
 
-def euclidean_distance(x, face):
-    distances = []
-    for i in range(len(face)):
-        y = getCol(face, i, True)
+def euclidean_distance(x, faces):
+    currMin = 1e10
+    for i in range(len(faces)):
+        y = np.array(faces[i]).flatten()
         distance = (sum((magnitudeMatrix(px) - magnitudeMatrix(py))**2  for px, py in zip(x,y)))**0.5
-        distances.append(distance)
-    return min(distances)
+        if distance<currMin:
+            currMin = distance
+            face = y
+    return face.reshape(256, 256)
