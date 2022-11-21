@@ -72,7 +72,7 @@ Langkah-langkah proses menjalankan program adalah sebagai berikut:
 
 
 ## Tampilan Interface Program
-![Tampilan Program](https://user-images.githubusercontent.com/91790457/202917995-0ad69f9c-4a31-4fa2-8186-f705c29dbfd3.jpg)
+![tampilan_program](https://user-images.githubusercontent.com/91790457/202999046-b73b275f-271c-48b8-95e7-a416abfcb2c8.jpg)
 
 
 ## Special Thanks
