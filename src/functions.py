@@ -83,6 +83,11 @@ def multiplyMatrix(Matrix1, Matrix2):
     result = np.matmul(Matrix1, Matrix2)
     return result
 
+# {fungsi yang mengembalikan hasil kali Matrix1 dan Matrix2 dan dibentuk menjadi matrix ukuran }
+def reshapeMultiply(Matrix1, Matrix2, row, col):
+    result = multiplyMatrix(Matrix1, Matrix2)
+    return np.array(result).reshape(row, col)
+
 # {fungsi yang mengembalikan transpose matrix}
 # fungsi ini menerima matrix lalu mengembalikan hasil transpose matrix tersebut
 def transpose(Matrix):
@@ -184,6 +189,14 @@ def magnitudeVector(u):
     for i in range(len(u)):
         result += u[i]*u[i]
     return (sqrt(result))
+
+# {return magnitude matrix m, sqrt(sum(sum(i**2 for i in j) for j in matrix))}
+def magnitudeMatrix(m):
+    result = 0
+    for i in range(len(m)):
+        for j in range(len(i)):
+            result += m[i][j]**2
+    return result**0.5
 
 # {fungsi yang mengembalikan proyeksi vektor u pada v}
 def orthoProjectVector(u, v):
@@ -321,3 +334,22 @@ def deltaMeanAndCovariant (Matrix3D):
     #mendapatkan matrix kovarian
     cov = multiplyMatrix(cov, transpose(cov))
     return ds2A, cov
+
+def eigFaces(eigenVectors, deltaMean):
+    eigFaces = []
+    for i in range(len(eigenVectors)):
+        eigFace = createMatrix(256, 256)
+        for j in range(len(deltaMean)):
+            temp = reshapeMultiply(getCol(eigenVectors, i, False), deltaMean[j], 256, 256)
+            eigFace = addMatrix(eigFace, temp)
+        eigFaces = concatMatrix(eigFaces, eigFace)
+
+    return eigFaces
+
+def euclidean_distance(x, face):
+    distances = []
+    for i in range(len(face)):
+        y = getCol(face, i, True)
+        distance = (sum((magnitudeMatrix(px) - magnitudeMatrix(py))**2  for px, py in zip(x,y)))**0.5
+        distances.append(distance)
+    return min(distances)
