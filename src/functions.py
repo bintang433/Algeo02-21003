@@ -371,13 +371,21 @@ def eigenfaces(eigenVectors, deltaMean):
     return eigFaces
 
 def omega(faces, deltaMean):
-    omegaMat = multiplyMatrix(transpose(deltaMean),faces)
-    # for i in range(len(deltaMean[0])):
-    #     for j in range(len(faces[0])):
-    #         temp = multiplyMatrix(np.array(getCol(deltaMean, i, False)).reshape(256, 256), np.array(getCol(faces, j, False)).reshape(256, 256))
-    #         omegaMat.append(np.array(temp).flatten())
-    #     print("omega progress: {:3.2f}%".format((i/len(deltaMean[0]))*100))
-    return transpose(omegaMat)
+    print(f"ukuran faces {np.array(faces).shape}")
+    print(f"ukuran deltaMean {np.array(deltaMean).shape}")
+    omegaMat = multiplyMatrix(transpose(faces),deltaMean)
+    return omegaMat
+def omegaInput(faces, deltaMean):
+    result = []
+    print(f"ukuran faces {np.array(faces).shape}")
+    print(f"ukuran deltaMean {np.array(deltaMean).shape}")
+    # omegaMat = multiplyMatrix(transpose(faces),deltaMean)
+    for i in range(len(faces[0])):
+        w = multiplyMatrix(transpose(getCol(faces, i, False)), deltaMean)
+        print(f"ukuran w {np.array(w[0]).shape}")
+        result.append(w[0])
+    return result
+    # yang dikeluarkan array weight (horizontal)
 
 # {fungsi yang mengembalikan euclidean distance dari 2 matrix}
 # asumsi dimensi kedua matrix sama
@@ -413,13 +421,13 @@ def datasetProcess(folder, fileAmount, eigenIteration):
     print(f"ukuran eigenFace: {len(eigenFaces)} x {len(eigenFaces[0])}")
     weight = omega(eigenFaces, deltaMean)
     print(f"ukuran weight {np.array(weight).shape}")
-    return deltaMean, meanMATRIX, weight
+    return deltaMean, meanMATRIX, eigenFaces, weight
 
-def inputWeight(Matrix, meanTraining, QRIteration):
+def inputProcess(Matrix, meanTraining, QRIteration, datasetEigFaces):
     minMean = np.array(subtractMatrix(Matrix, meanTraining)).reshape(256,256)
     cov = multiplyMatrix(minMean, transpose(minMean))
     eigenValues = eigenvalue(cov, QRIteration)
     eigenVectors = eigenvector(cov, eigenValues)
     eigenFaces = eigenfaces(eigenVectors, minMean)
-    weight = omega(eigenFaces, minMean)
-    return weight
+    inputWeight = omegaInput(datasetEigFaces, transpose([minMean.flatten()]))
+    return eigenFaces, inputWeight
