@@ -11,4 +11,5 @@ INPUT = fun.accessImage('src\\test.jpg')
 deltaMean, meanTraining, weightTraining = fun.datasetProcess(folder, -1, 1)
 weightInput = fun.inputWeight(INPUT, meanTraining, 1)
 
+
 print(weightInput)
