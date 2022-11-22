@@ -99,48 +99,26 @@ def intoOneRowMat(Matrix):
 def intoOneColMat(Matrix):
     return transpose(intoOneRowMat(Matrix))
 
-# Operasi baris matrix
-# baris : 1 baris matrix yang dijadikan array (1 dimensi)
-# gunakan getRow dengan parameter asList true
-# {fungsi yang mengurangkan row1 dengan row2}
-def addRow(row1, row2):
+# Operasi array
+# {fungsi yang menjumlahkan row1 dengan row2}
+def addArray(row1, row2):
     result = np.add(row1,row2)
     return result
-# {fungsi yang menjumlahkan row1 dengan row2}
-def subtractRow(row1, row2):
+# {fungsi yang mengurangkan row1 dengan row2}
+def subtractArray(row1, row2):
     result = np.subtract(row1,row2)
     return result
 # {fungsi yang mengalikan row dengan n}
-def multiplyByConstRow(baris, n):
+def multiplyByConstArray(baris, n):
     result = np.array(baris) * n
     return result
-# def swapRow(M, row1, row2):
-#     colM = len(M[0])
-#     Mcopy = copyMatrix(M)               #inefficent for image matrices, if fixing, make copy of row instead of matrix
-#     for i in range(colM):
-#         M[row1][i] = Mcopy[row2][i]
-#         M[row2][i] = Mcopy[row1][i]
 
 # Operasi vektor
-# Vektor : 1 kolom matrix yang dijadikan array (1 dimensi)
-# {fungsi yang menghasilkan penjumlahan dua vektor u dan vektor v}
-def addVector(u, v):
-    result = np.add(u,v)
-    return result
-
-# {fungsi yang menghasilkan pengurangan dua vektor u dan vektor v}
-def subtractVector(u, v):
-    result = np.subtract(u,v)
-    return result
-
-# {fungsi yang menghasilkan product dari 2 vektor}
+# Vektor : 1 kolom matrix yang dijadikan array
+# Karena dalam bentuk array, operasi menggunakan fungsi operasi array
+# {fungsi yang menghasilkan dot product dari 2 vektor}
 def dotProductVector(u, v):
     result = np.dot(u,v)
-    return result
-
-# {fungsi yang mengalikan vektor u dengan skalar n}
-def scaleVector(u, n):
-    result = np.array(u)*n
     return result
 
 # {fungsi yang mengembalikan magnitude vektor u}
@@ -152,7 +130,7 @@ def magnitudeVector(u):
 
 # {fungsi yang mengembalikan proyeksi vektor u pada v}
 def orthoProjectVector(u, v):
-    return (scaleVector(u, dotProductVector(u,v)/dotProductVector(u,u)))
+    return (multiplyByConstArray(u, dotProductVector(u,v)/dotProductVector(u,u)))
 
 # Operator Image
 # {mengakses semua image di dalam image dan mengeluarkan matrix grayscale yang diresize}
@@ -175,6 +153,7 @@ def datasetToArray (folder):
             matrix = asarray(ar)
             result.append(np.array(matrix).flatten())
     return result
+
 # {fungsi yang mengakses dataset, mengubah image-image menjadi ukuran tertentu, grayscale dan menjadi 1 baris, lalu mengonkatenasi semuanya untuk diproses}
 # {fungsi ini sama dengan dataSetToArray() tapi menambahkan batasan jumlah foto}
 # {untuk tidak membatasi banyak matrix yang dihasilkan, amount diinput -1}
@@ -204,23 +183,21 @@ def deltaMeanAndCovariant(Matrix):
     #menjumlahkan data-data
     mean = [0 for j in range(col)]
     for i in range(row):
-        mean = addRow(mean, dataset[i])
+        mean = addArray(mean, dataset[i])
     #dataset dibagi banyak data
-    mean = multiplyByConstRow(mean, 1/row)
-    meanVector = [mean]
+    mean = multiplyByConstArray(mean, 1/row)
+    meanMat = [mean]
     print("Achieved mean of matrices")
     #dari sini sudah diperoleh nilai mean dari row-row
     #mengurangi row-row dengan mean
     for i in range(row):
-        dataset[i] = subtractRow(dataset[i], mean)
+        dataset[i] = subtractArray(dataset[i], mean)
     print("Achieved dataset mean")
-    #dari sini dataset adalah berukuran baris banyak file kolom resolusi**2
     #mendapatkan matrix kovarian
     cov = multiplyMatrix(dataset, transpose(dataset))
-    # cov = multiplyMatrix(dataset, transpose(dataset))
     print("Achieved covariance matrix")
     #ukuran matrix kovarian: banyak file x banyak file
-    return transpose(dataset), transpose(meanVector), cov
+    return transpose(dataset), transpose(meanMat), cov
 
 # {fungsi yang menghasilkan dekomposisi QR dari suatu matrix}
 def QR(Matrix):
@@ -232,7 +209,7 @@ def QR(Matrix):
         v = getCol(Q, j, True)
         for k in range(j-1,0-1,-1):
             uk = getCol(Q, k, True)
-            u = subtractVector(u, orthoProjectVector(uk,v))
+            u = subtractArray(u, orthoProjectVector(uk,v))
         for i in range(col):
             Q[i][j] = u[i] / magnitudeVector(u)
     temp = multiplyMatrix(transpose(Q),Matrix)
@@ -275,7 +252,7 @@ def eigenFaces(eigenVectors, deltaMean):
         col = getCol(eigenVectors, i, False)
         temp = getRow(transpose(multiplyMatrix(deltaMean, col)), 0, True)
         # dibagi dengan norm
-        temp = multiplyByConstRow(temp, magnitudeVector(temp))
+        temp = multiplyByConstArray(temp, magnitudeVector(temp))
         eigFaces.append(temp)
         print("eigen face progress: {:3.2f}%".format((i/len(eigenVectors[0]))*100))
     eigFaces = transpose(eigFaces)
@@ -290,15 +267,15 @@ def omega(faces, deltaMean):
     #     print("omega progress: {:3.2f}%".format((i/len(deltaMean[0]))*100))
     return transpose(omegaMat)
 
-# def euclidean_distance(x, faces):
-#     currMin = 1e10
-#     for i in range(len(faces)):
-#         y = np.array(faces[i]).flatten()
-#         distance = (sum((magnitudeMatrix(px) - magnitudeMatrix(py))**2  for px, py in zip(x,y)))**0.5
-#         if distance<currMin:
-#             currMin = distance
-#             face = y
-#     return face.reshape(256, 256)
+# {fungsi yang mengembalikan euclidean distance dari 2 matrix}
+# asumsi dimensi kedua matrix sama
+def euclidean_distance(matrix1, matrix2):
+    distance = 0
+    result = subtractMatrix(matrix1, matrix2)
+    for i in range(len(result)):
+        for j in range(len(result[0])):
+            distance += result[i][j] * result[i][j]
+    return sqrt(distance)
 
 def datasetWeight(folder, fileAmount, eigenIteration):
     MATRIX = datasetToArray_FixedAmount(os.getcwd()+folder, fileAmount)
@@ -334,11 +311,11 @@ def inputWeight(Matrix1Row):
     col = len(Matrix[0])
     mean = [0 for j in range(col)]
     for i in range(row):
-        mean = addRow(mean, dataset[i])
-    mean = multiplyByConstRow(mean, 1/row)
-    meanVector = [mean]
+        mean = addArray(mean, dataset[i])
+    mean = multiplyByConstArray(mean, 1/row)
+    meanMat = [mean]
     for i in range(row):
-        dataset[i] = subtractRow(dataset[i], mean)
+        dataset[i] = subtractArray(dataset[i], mean)
     cov = multiplyMatrix(dataset, transpose(dataset))
     eigenVectors = eigenvector(cov)
     eigenfaces = eigenFaces(eigenVectors, dataset)
