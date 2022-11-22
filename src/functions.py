@@ -138,15 +138,15 @@ def intoOneCol(Matrix):
 # baris : 1 baris matrix yang dijadikan array (1 dimensi)
 # gunakan getRow dengan parameter asList true
 # {fungsi yang mengurangkan row1 dengan row2}
-def addRow(row1, row2):
+def addArray(row1, row2):
     result = np.add(row1,row2)
     return result
 # {fungsi yang menjumlahkan row1 dengan row2}
-def subtractRow(row1, row2):
+def subtractArray(row1, row2):
     result = np.subtract(row1,row2)
     return result
 # {fungsi yang mengalikan row dengan n}
-def multiplyByConstRow(baris, n):
+def multiplyByConstArray(baris, n):
     result = np.array(baris) * n
     return result
 # def swapRow(M, row1, row2):
@@ -339,16 +339,16 @@ def deltaMeanAndCovariant (Matrix3D):
     #menjumlahkan data-data
     mean = [0 for j in range(col*row)]
     for i in range(depth):
-        mean = addRow(mean, delta[i])
+        mean = addArray(mean, delta[i])
 
     #delta dibagi banyak data
-    mean = multiplyByConstRow(mean, 1/depth)
+    mean = multiplyByConstArray(mean, 1/depth)
     meanVector = [mean]
     print("Achieved mean of matrices")
     #dari sini sudah diperoleh nilai mean dari row-row
     #mengurangi row-row dengan mean
     for i in range(depth):
-        delta[i] = subtractRow(delta[i], mean)
+        delta[i] = subtractArray(delta[i], mean)
     print("Achieved delta mean")
     #dari sini delta adalah berukuran baris banyak file kolom resolusi**2
     #mendapatkan matrix kovarian
@@ -364,13 +364,13 @@ def eigenFaces(eigenVectors, deltaMean):
         col = getCol(eigenVectors, i, False)
         temp = getRow(transpose(multiplyMatrix(deltaMean, col)), 0, True)
         # dibagi dengan norm
-        temp = multiplyByConstRow(temp, magnitudeVector(temp))
+        temp = multiplyByConstArray(temp, magnitudeVector(temp))
         eigFaces.append(temp)
         print("eigen face progress: {:3.2f}%".format((i/len(eigenVectors[0]))*100))
     eigFaces = transpose(eigFaces)
     return eigFaces
 
-def Omega(faces, deltaMean):
+def omega(faces, deltaMean):
     omegaMat = multiplyMatrix(transpose(deltaMean),faces)
     # for i in range(len(deltaMean[0])):
     #     for j in range(len(faces[0])):
@@ -388,3 +388,57 @@ def Omega(faces, deltaMean):
 #             currMin = distance
 #             face = y
 #     return face.reshape(256, 256)
+# {fungsi yang mengembalikan euclidean distance dari 2 matrix}
+# asumsi dimensi kedua matrix sama
+def euclidean_distance(matrix1, matrix2):
+    distance = 0
+    result = subtractMatrix(matrix1, matrix2)
+    for i in range(len(result)):
+        for j in range(len(result[0])):
+            distance += result[i][j] * result[i][j]
+    return sqrt(distance)
+
+def datasetWeight(folder, fileAmount, eigenIteration):
+    MATRIX = datasetToArray_FixedAmount(os.getcwd()+folder, fileAmount)
+    deltaMean, meanMATRIX, covMATRIX = deltaMeanAndCovariant(MATRIX)
+    eigenValues = eigenvalue(covMATRIX, eigenIteration)
+    total = sum(eigenValues)
+    if (len(MATRIX[0]) > 5):
+        temp = 0
+        i = 0
+        eigenValFilter = []
+        while (temp<(0.95*total))and(eigenValues[i]>=1):
+            eigenValFilter.append(eigenValues[i])
+            temp += eigenValues[i]
+            i += 1
+    else : 
+        eigenValFilter = eigenValues
+    eigVecEff = len(eigenValFilter)
+    print(f"ukuran eigenValFilter: {len(eigenValFilter)}")
+    eigenVectors = eigenvector(covMATRIX, eigenValues)
+    print(f"Ukuran eigenVector: {np.array(eigenVectors).shape}")
+    tempEigenFaces = eigenFaces(eigenVectors, deltaMean)
+    eigenfaces = transpose(transpose(tempEigenFaces)[:eigVecEff])
+    print(f"ukuran eigenFace: {len(eigenfaces)} x {len(eigenfaces[0])}")
+    result = omega(eigenfaces, deltaMean)
+    print(f"ukuran result {np.array(result).shape}")
+    return result
+
+def inputWeight(Matrix1Row):
+    Matrix = np.array(Matrix1Row).reshape(256,256)
+    print(f"ukuran Matrix {np.array(Matrix).shape}")
+    dataset = copyMatrix(Matrix)
+    row = len(Matrix)
+    col = len(Matrix[0])
+    mean = [0 for j in range(col)]
+    for i in range(row):
+        mean = addArray(mean, dataset[i])
+    mean = multiplyByConstArray(mean, 1/row)
+    meanMat = [mean]
+    for i in range(row):
+        dataset[i] = subtractArray(dataset[i], mean)
+    cov = multiplyMatrix(dataset, transpose(dataset))
+    eigenVectors = eigenvector(cov)
+    eigenfaces = eigenFaces(eigenVectors, dataset)
+    weight = omega(eigenfaces, dataset)
+    return weight

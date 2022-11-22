@@ -18,8 +18,8 @@ import cv2
 #     [42, 45, 47, 54, 55, 59],
 #     [30, 34, 36, 42, 44, 50]
 # ]
-folder = "\\test\\pins_camila mendes"
-MATRIX = fun.datasetToArray_FixedAmount(os.getcwd()+folder, -1)
+folder = "\\test\\dataset"
+MATRIX = fun.datasetToArray_FixedAmount(os.getcwd()+folder, 1)
 deltaMean, meanMATRIX, covMATRIX = fun.deltaMeanAndCovariant(MATRIX)
 # plt.imshow(np.array(meanMATRIX).reshape(256, 256), cmap='gray', vmin=0, vmax=255)
 # plt.show()
