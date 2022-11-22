@@ -2,6 +2,8 @@ from PIL import Image
 import numpy as np
 import os
 from numpy import *
+from matplotlib import pyplot as plt
+import cv2 
 
 # Operator matrix
 # {Prosedur membuat matrix 0 dengan ukuran baris row dan kolom col}
@@ -248,8 +250,8 @@ def eigenvector(Matrix, EigenVal):
             tempMat[j][j] -= tempEigVal[j]
         EigVec = np.linalg.solve(tempMat, tempEigVal)
         norm = magnitudeVector(EigVec)
-        for j in range(len(EigVec)):
-            EigVec[j] /= norm
+        # for j in range(len(EigVec)):
+        #     EigVec[j] /= norm
         result.append(EigVec)
     return result
 
@@ -268,7 +270,8 @@ def copyMatrix3D (Matrix3D):
 # Operator Image
 # {mengakses semua image di dalam image dan mengeluarkan matrix grayscale yang diresize}
 def accessImage (folder):
-    image = Image.open(folder,mode='r').convert('L').resize([256,256])
+    tempImg = cv2.imread(folder, cv2.IMREAD_GRAYSCALE)
+    image = cv2.resize(tempImg, [256, 256])
     ar = np.array(image)
     matrix = asarray(ar)                #matrix = masing-masing gambar dalam bentuk matrix
     matrix = intoOneCol(matrix)
@@ -288,7 +291,8 @@ def datasetToArray (folder):
     for (root,dirs,files) in os.walk(folder, topdown=True):
         for i in files:
             directory = root + "\\" + i
-            image = Image.open(directory,mode='r').convert('L').resize([256,256])
+            tempImg = cv2.imread(directory, cv2.IMREAD_GRAYSCALE)
+            image = cv2.resize(tempImg, [256, 256])
             ar = np.array(image)
             matrix = asarray(ar)
             result.append(matrix)
@@ -304,7 +308,8 @@ def datasetToArray_FixedAmount (folder, amount):
             if ctr>=amount and ctr>=0:
                 break
             directory = root + "\\" + i
-            image = Image.open(directory,mode='r').convert('L').resize([256,256])
+            tempImg = cv2.imread(directory, cv2.IMREAD_GRAYSCALE)
+            image = cv2.resize(tempImg, [256, 256])
             ar = np.array(image)
             matrix = asarray(ar)
             result.append(matrix)
@@ -332,12 +337,14 @@ def deltaMeanAndCovariant (Matrix3D):
         temp = np.array(dataset[i]).flatten()
         delta.append(temp)
     #menjumlahkan data-data
+    print(np.array(delta))
     mean = [0 for j in range(col*row)]
-    meanVector = [mean]
     for i in range(depth):
         mean = addRow(mean, delta[i])
+
     #delta dibagi banyak data
     mean = multiplyByConstRow(mean, 1/depth)
+    meanVector = [mean]
     print("Achieved mean of matrices")
     #dari sini sudah diperoleh nilai mean dari row-row
     #mengurangi row-row dengan mean
@@ -345,6 +352,7 @@ def deltaMeanAndCovariant (Matrix3D):
     for i in range(depth):
         delta[i] = subtractRow(delta[i], mean)
         print("delta mean progress: {:3.2f}%".format((i/depth)*100))
+    print("Acquired delta mean")
     #dari sini delta adalah berukuran baris banyak file kolom resolusi**2
     #mendapatkan matrix kovarian
     cov = multiplyMatrix(delta, transpose(delta))
@@ -353,7 +361,7 @@ def deltaMeanAndCovariant (Matrix3D):
     #ukuran matrix kovarian: banyak file x banyak file
     return transpose(delta), transpose(meanVector), cov
 
-def eigFaces(eigenVectors, deltaMean):
+def eigenFaces(eigenVectors, deltaMean):
     eigFaces = []
     for i in range(len(eigenVectors[0])):
         col = getCol(eigenVectors, i, False)
@@ -363,12 +371,21 @@ def eigFaces(eigenVectors, deltaMean):
     eigFaces = transpose(eigFaces)
     return eigFaces
 
-def euclidean_distance(x, faces):
-    currMin = 1e10
-    for i in range(len(faces)):
-        y = np.array(faces[i]).flatten()
-        distance = (sum((magnitudeMatrix(px) - magnitudeMatrix(py))**2  for px, py in zip(x,y)))**0.5
-        if distance<currMin:
-            currMin = distance
-            face = y
-    return face.reshape(256, 256)
+def Omega(faces, deltaMean):
+    omegaMat = []
+    for i in range(len(deltaMean[0])):
+        for j in range(len(faces[0])):
+            temp = multiplyMatrix(np.array(getCol(deltaMean, i, False)).reshape(256, 256), np.array(getCol(faces, j, False)).reshape(256, 256))
+            omegaMat.append([np.array(temp).flatten()])
+        print("omega progress: {:3.2f}%".format((i/len(deltaMean[0]))*100))
+    return transpose(omegaMat)
+
+# def euclidean_distance(x, faces):
+#     currMin = 1e10
+#     for i in range(len(faces)):
+#         y = np.array(faces[i]).flatten()
+#         distance = (sum((magnitudeMatrix(px) - magnitudeMatrix(py))**2  for px, py in zip(x,y)))**0.5
+#         if distance<currMin:
+#             currMin = distance
+#             face = y
+#     return face.reshape(256, 256)
