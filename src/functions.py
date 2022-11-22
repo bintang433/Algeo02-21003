@@ -431,3 +431,28 @@ def inputProcess(Matrix, meanTraining, QRIteration, datasetEigFaces):
     eigenFaces = eigenfaces(eigenVectors, minMean)
     inputWeight = omegaInput(datasetEigFaces, transpose([minMean.flatten()]))
     return eigenFaces, inputWeight
+
+def recognition(folderDataSet, dirInput):
+    INPUT = accessImage(dirInput)
+    deltaMean, meanTraining, datasetEigFaces, weightTraining = datasetProcess(folderDataSet, 1, 1)
+    inputEigFaces, weightInput = inputProcess(INPUT, meanTraining, 1, datasetEigFaces)
+    minDistance = euclidean_distance(weightInput, getCol(weightTraining, 0, True))
+    indexMin = 0
+    sumDistance = 0
+    for i in range(1, len(weightTraining[0])):
+        distance = euclidean_distance(weightInput, getCol(weightTraining, i, True))
+        sumDistance += distance
+        if (distance < minDistance):
+            indexMin = i
+            minDistance = distance
+    sumDistance /= len(weightTraining[0])
+    weightResult = getCol(weightTraining, indexMin, True)
+    output = createMatrix(len(datasetEigFaces), 1)
+    for i in range(len(weightResult)):
+        output = addMatrix(output, multiplyByConstMatrix(getCol(datasetEigFaces, i, False), weightResult[i]))
+    output = addMatrix(output, meanTraining)
+    unfold = np.array(output).reshape(256,256)
+    if (minDistance<sumDistance):
+        return unfold
+    else:
+        return addMatrix(deltaMean, meanTraining)
