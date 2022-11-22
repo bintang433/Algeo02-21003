@@ -305,7 +305,7 @@ def datasetToArray_FixedAmount (folder, amount):
     ctr=0
     for (root,dirs,files) in os.walk(folder, topdown=True):
         for i in files:
-            if ctr>=amount and ctr>=0:
+            if ctr>=amount and amount>=0:
                 break
             directory = root + "\\" + i
             tempImg = cv2.imread(directory, cv2.IMREAD_GRAYSCALE)
@@ -337,7 +337,6 @@ def deltaMeanAndCovariant (Matrix3D):
         temp = np.array(dataset[i]).flatten()
         delta.append(temp)
     #menjumlahkan data-data
-    print(np.array(delta))
     mean = [0 for j in range(col*row)]
     for i in range(depth):
         mean = addRow(mean, delta[i])
@@ -348,11 +347,9 @@ def deltaMeanAndCovariant (Matrix3D):
     print("Achieved mean of matrices")
     #dari sini sudah diperoleh nilai mean dari row-row
     #mengurangi row-row dengan mean
-    print("Calculating delta mean")
     for i in range(depth):
         delta[i] = subtractRow(delta[i], mean)
-        print("delta mean progress: {:3.2f}%".format((i/depth)*100))
-    print("Acquired delta mean")
+    print("Achieved delta mean")
     #dari sini delta adalah berukuran baris banyak file kolom resolusi**2
     #mendapatkan matrix kovarian
     cov = multiplyMatrix(delta, transpose(delta))
@@ -365,19 +362,21 @@ def eigenFaces(eigenVectors, deltaMean):
     eigFaces = []
     for i in range(len(eigenVectors[0])):
         col = getCol(eigenVectors, i, False)
-        temp = transpose(multiplyMatrix(deltaMean, col))
-        eigFaces.append(temp[0])
+        temp = getRow(transpose(multiplyMatrix(deltaMean, col)), 0, True)
+        # dibagi dengan norm
+        temp = multiplyByConstRow(temp, magnitudeVector(temp))
+        eigFaces.append(temp)
         print("eigen face progress: {:3.2f}%".format((i/len(eigenVectors[0]))*100))
     eigFaces = transpose(eigFaces)
     return eigFaces
 
 def Omega(faces, deltaMean):
-    omegaMat = []
-    for i in range(len(deltaMean[0])):
-        for j in range(len(faces[0])):
-            temp = multiplyMatrix(np.array(getCol(deltaMean, i, False)).reshape(256, 256), np.array(getCol(faces, j, False)).reshape(256, 256))
-            omegaMat.append([np.array(temp).flatten()])
-        print("omega progress: {:3.2f}%".format((i/len(deltaMean[0]))*100))
+    omegaMat = multiplyMatrix(transpose(deltaMean),faces)
+    # for i in range(len(deltaMean[0])):
+    #     for j in range(len(faces[0])):
+    #         temp = multiplyMatrix(np.array(getCol(deltaMean, i, False)).reshape(256, 256), np.array(getCol(faces, j, False)).reshape(256, 256))
+    #         omegaMat.append(np.array(temp).flatten())
+    #     print("omega progress: {:3.2f}%".format((i/len(deltaMean[0]))*100))
     return transpose(omegaMat)
 
 # def euclidean_distance(x, faces):

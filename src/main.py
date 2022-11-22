@@ -18,13 +18,13 @@ import cv2
 #     [42, 45, 47, 54, 55, 59],
 #     [30, 34, 36, 42, 44, 50]
 # ]
-MATRIX = fun.datasetToArray_FixedAmount(os.getcwd()+"\\test\\dataset", 1)
-fileCount = len(MATRIX)
+folder = "\\test\\pins_camila mendes"
+MATRIX = fun.datasetToArray_FixedAmount(os.getcwd()+folder, -1)
 deltaMean, meanMATRIX, covMATRIX = fun.deltaMeanAndCovariant(MATRIX)
 # plt.imshow(np.array(meanMATRIX).reshape(256, 256), cmap='gray', vmin=0, vmax=255)
 # plt.show()
 # plt.imshow(np.array(meanMATRIX).reshape(256, 256), cmap='gray', vmin=0, vmax=255)
-# plt.show()
+# plt.show()h
 #tiap eigenvector adalah 1 kolom
 eigenValues = fun.eigenvalue(covMATRIX, 10)
 total = sum(eigenValues)
@@ -49,12 +49,14 @@ print(f"Ukuran eigenVector: {np.array(eigenVectors).shape}")
 # print(np.array(eigenVectors))
 tempEigenFaces = fun.eigenFaces(eigenVectors, deltaMean)
 eigenFaces = transpose(transpose(tempEigenFaces)[:eigVecEff])
-# plt.imshow(np.array(fun.getCol(eigenFaces, 29, False)).reshape(256, 256), cmap='gray', vmin=-1e-7, vmax=1e-7)
-# plt.show()
+plt.imshow(np.array(fun.getCol(eigenFaces, 0, False)).reshape(256, 256))
+plt.show()
+plt.imshow(np.array(fun.getCol(eigenFaces, 78, False)).reshape(256, 256))
+plt.show()
 # cv2.imshow("Resized image")
 print(f"ukuran eigenFace: {len(eigenFaces)} x {len(eigenFaces[0])}")
-omega = fun.Omega(eigenFaces, deltaMean)
-print(f"ukuran omega {np.array(omega).shape}")
+# omega = fun.Omega(eigenFaces, deltaMean)
+# print(f"ukuran omega {np.array(omega).shape}")
 
 # testImg = fun.accessImage(os.getcwd()+"\src\\dadario.jpg")
 # testImg = fun.subtractMatrix(testImg, meanMATRIX)
