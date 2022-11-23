@@ -138,15 +138,15 @@ def intoOneCol(Matrix):
 # baris : 1 baris matrix yang dijadikan array (1 dimensi)
 # gunakan getRow dengan parameter asList true
 # {fungsi yang mengurangkan row1 dengan row2}
-def addArray(row1, row2):
+def addRow(row1, row2):
     result = np.add(row1,row2)
     return result
 # {fungsi yang menjumlahkan row1 dengan row2}
-def subtractArray(row1, row2):
+def subtractRow(row1, row2):
     result = np.subtract(row1,row2)
     return result
 # {fungsi yang mengalikan row dengan n}
-def multiplyByConstArray(baris, n):
+def multiplyByConstRow(baris, n):
     result = np.array(baris) * n
     return result
 # def swapRow(M, row1, row2):
@@ -339,16 +339,16 @@ def deltaMeanAndCovariant (Matrix3D):
     #menjumlahkan data-data
     mean = [0 for j in range(col*row)]
     for i in range(depth):
-        mean = addArray(mean, delta[i])
+        mean = addRow(mean, delta[i])
 
     #delta dibagi banyak data
-    mean = multiplyByConstArray(mean, 1/depth)
+    mean = multiplyByConstRow(mean, 1/depth)
     meanVector = [mean]
     print("Achieved mean of matrices")
     #dari sini sudah diperoleh nilai mean dari row-row
     #mengurangi row-row dengan mean
     for i in range(depth):
-        delta[i] = subtractArray(delta[i], mean)
+        delta[i] = subtractRow(delta[i], mean)
     print("Achieved delta mean")
     #dari sini delta adalah berukuran baris banyak file kolom resolusi**2
     #mendapatkan matrix kovarian
@@ -358,36 +358,34 @@ def deltaMeanAndCovariant (Matrix3D):
     #ukuran matrix kovarian: banyak file x banyak file
     return transpose(delta), transpose(meanVector), cov
 
-def eigenFaces(eigenVectors, deltaMean):
+def eigenfaces(eigenVectors, deltaMean):
     eigFaces = []
     for i in range(len(eigenVectors[0])):
         col = getCol(eigenVectors, i, False)
         temp = getRow(transpose(multiplyMatrix(deltaMean, col)), 0, True)
         # dibagi dengan norm
-        temp = multiplyByConstArray(temp, magnitudeVector(temp))
+        temp = multiplyByConstRow(temp, magnitudeVector(temp))
         eigFaces.append(temp)
         print("eigen face progress: {:3.2f}%".format((i/len(eigenVectors[0]))*100))
     eigFaces = transpose(eigFaces)
     return eigFaces
 
 def omega(faces, deltaMean):
-    omegaMat = multiplyMatrix(transpose(deltaMean),faces)
-    # for i in range(len(deltaMean[0])):
-    #     for j in range(len(faces[0])):
-    #         temp = multiplyMatrix(np.array(getCol(deltaMean, i, False)).reshape(256, 256), np.array(getCol(faces, j, False)).reshape(256, 256))
-    #         omegaMat.append(np.array(temp).flatten())
-    #     print("omega progress: {:3.2f}%".format((i/len(deltaMean[0]))*100))
-    return transpose(omegaMat)
+    print(f"ukuran faces {np.array(faces).shape}")
+    print(f"ukuran deltaMean {np.array(deltaMean).shape}")
+    omegaMat = multiplyMatrix(transpose(faces),deltaMean)
+    return omegaMat
+def omegaInput(faces, deltaMean):
+    result = []
+    print(f"ukuran faces {np.array(faces).shape}")
+    print(f"ukuran deltaMean {np.array(deltaMean).shape}")
+    # omegaMat = multiplyMatrix(transpose(faces),deltaMean)
+    for i in range(len(faces[0])):
+        w = multiplyMatrix(transpose(getCol(faces, i, False)), deltaMean)
+        result.append(w[0])
+    return result
+    # yang dikeluarkan array weight (horizontal)
 
-# def euclidean_distance(x, faces):
-#     currMin = 1e10
-#     for i in range(len(faces)):
-#         y = np.array(faces[i]).flatten()
-#         distance = (sum((magnitudeMatrix(px) - magnitudeMatrix(py))**2  for px, py in zip(x,y)))**0.5
-#         if distance<currMin:
-#             currMin = distance
-#             face = y
-#     return face.reshape(256, 256)
 # {fungsi yang mengembalikan euclidean distance dari 2 matrix}
 # asumsi dimensi kedua matrix sama
 def euclidean_distance(matrix1, matrix2):
@@ -398,7 +396,7 @@ def euclidean_distance(matrix1, matrix2):
             distance += result[i][j] * result[i][j]
     return sqrt(distance)
 
-def datasetWeight(folder, fileAmount, eigenIteration):
+def datasetProcess(folder, fileAmount, eigenIteration):
     MATRIX = datasetToArray_FixedAmount(os.getcwd()+folder, fileAmount)
     deltaMean, meanMATRIX, covMATRIX = deltaMeanAndCovariant(MATRIX)
     eigenValues = eigenvalue(covMATRIX, eigenIteration)
@@ -417,28 +415,52 @@ def datasetWeight(folder, fileAmount, eigenIteration):
     print(f"ukuran eigenValFilter: {len(eigenValFilter)}")
     eigenVectors = eigenvector(covMATRIX, eigenValues)
     print(f"Ukuran eigenVector: {np.array(eigenVectors).shape}")
-    tempEigenFaces = eigenFaces(eigenVectors, deltaMean)
-    eigenfaces = transpose(transpose(tempEigenFaces)[:eigVecEff])
-    print(f"ukuran eigenFace: {len(eigenfaces)} x {len(eigenfaces[0])}")
-    result = omega(eigenfaces, deltaMean)
-    print(f"ukuran result {np.array(result).shape}")
-    return result
+    tempEigenFaces = eigenfaces(eigenVectors, deltaMean)
+    eigenFaces = transpose(transpose(tempEigenFaces)[:eigVecEff])
+    for i in range(5):
+        plt.imshow(np.array(getCol(eigenFaces, i, False)).reshape(256,256), cmap = 'gray')
+        plt.show()
+    print(f"ukuran eigenFace: {len(eigenFaces)} x {len(eigenFaces[0])}")
+    weight = omega(eigenFaces, deltaMean)
+    print(f"ukuran weight {np.array(weight).shape}")
+    return deltaMean, meanMATRIX, eigenFaces, weight
 
-def inputWeight(Matrix1Row):
-    Matrix = np.array(Matrix1Row).reshape(256,256)
-    print(f"ukuran Matrix {np.array(Matrix).shape}")
-    dataset = copyMatrix(Matrix)
-    row = len(Matrix)
-    col = len(Matrix[0])
-    mean = [0 for j in range(col)]
-    for i in range(row):
-        mean = addArray(mean, dataset[i])
-    mean = multiplyByConstArray(mean, 1/row)
-    meanMat = [mean]
-    for i in range(row):
-        dataset[i] = subtractArray(dataset[i], mean)
-    cov = multiplyMatrix(dataset, transpose(dataset))
-    eigenVectors = eigenvector(cov)
-    eigenfaces = eigenFaces(eigenVectors, dataset)
-    weight = omega(eigenfaces, dataset)
-    return weight
+def inputProcess(Matrix, meanTraining, QRIteration, datasetEigFaces):
+    minMean = np.array(subtractMatrix(Matrix, meanTraining)).reshape(256,256)
+    cov = multiplyMatrix(minMean, transpose(minMean))
+    eigenValues = eigenvalue(cov, QRIteration)
+    eigenVectors = eigenvector(cov, eigenValues)
+    eigenFaces = eigenfaces(eigenVectors, minMean)
+    inputWeight = omegaInput(datasetEigFaces, transpose([minMean.flatten()]))
+    return eigenFaces, inputWeight
+
+def recognition(folderDataSet, dirInput, fileLimit, QRiteration):
+    INPUT = accessImage(dirInput)
+    deltaMean, meanTraining, datasetEigFaces, weightTraining = datasetProcess(folderDataSet, fileLimit, QRiteration)
+    inputEigFaces, weightInput = inputProcess(INPUT, meanTraining, 1, datasetEigFaces)
+    minDistance = euclidean_distance(weightInput, getCol(weightTraining, 0, True))
+    indexMin = 0
+    sumDistance = 0
+    for i in range(1, len(weightTraining[0])):
+        distance = euclidean_distance(weightInput, getCol(weightTraining, i, True))
+        sumDistance += distance
+        if (distance < minDistance):
+            indexMin = i
+            minDistance = distance
+    sumDistance /= len(weightTraining[0])
+    weightResult = getCol(weightTraining, indexMin, True)
+    output = createMatrix(len(datasetEigFaces), 1)
+    for i in range(len(weightResult)):
+        output = addMatrix(output, multiplyByConstMatrix(getCol(datasetEigFaces, i, False), weightResult[i]))
+    output = addMatrix(output, meanTraining)
+    unfold = np.array(output).reshape(256,256)
+    print(f"minDistance {minDistance}, sumDistance {sumDistance}")
+    print("add corresponding delta mean matrix with mean")
+    retImage = addMatrix(getCol(deltaMean, indexMin, False), meanTraining).reshape(256,256)
+    plt.imsave("OG_deltaplusmean.jpg", retImage)
+    plt.imshow(retImage, cmap='gray')
+    plt.show()
+    # print("output from unfold")
+    # plt.imsave("process_deltaplusmean.jpg", unfold)
+    # plt.imshow(unfold, cmap='gray')
+    # plt.show()
